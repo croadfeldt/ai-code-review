@@ -1,8 +1,9 @@
 # Open questions
 
 **Status:** v0.1, 2026-10-14. **Owner:** Chris Roadfeldt.
-**For:** the maintainer's ruling before the blueprint is written. Each ruling becomes an entry in the
-decision record.
+**For:** the record of what was open before the blueprint. **All eleven were ruled on 2026-10-14, as
+recommended;** each ruling is an entry in the [decision record](21-decision-record.md), O1 to O11 as D13 to
+D23.
 
 The research settled most of the shape ([what the research settled](research/README.md)). These are the
 points it could not settle, because they are choices, not facts. Each has my recommendation.
