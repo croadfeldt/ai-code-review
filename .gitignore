@@ -10,3 +10,4 @@ reviewer/out/
 reviewer/.venv/
 examples/**/cache/
 examples/**/scratch/
+/out/
