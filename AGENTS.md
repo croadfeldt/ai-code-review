@@ -13,6 +13,9 @@ to admit, fits the code base, and is proven. It reads the harness's evidence as 
 | Path | What it is |
 |---|---|
 | `docs/00`, `docs/01`, `docs/03` | Executive summary, business case, the blueprint in three pages |
+| `docs/02`, `docs/05` | How it works, with diagrams; the capability map, one primary and one fallback per capability |
+| `docs/14`, `docs/15` | The specification (R1 onwards, each with its proof); the failure register |
+| `blueprint/` | The contracts: finding schema, rule catalogue, predicate, evidence input, gate policy and its tests, pipeline skeleton |
 | `docs/21-decision-record.md` | The settled positions, D1 onwards; the blueprint does not contradict them |
 | `docs/04-landscape.md` | Existing work to reuse, learn from, benchmark against, or avoid |
 | `docs/research/` | The research behind the blueprint, one file per track, each ending in what it changes |
