@@ -26,7 +26,8 @@ review better or worse.
 
 **Customer pain:** Human review is not built to catch what now comes in.
 
-- Only about one review comment in seven is about a defect (Bacchelli and Bird, ICSE 2013).
+- Only 5 to 20% of human review comments are about defects, a range that has held from Microsoft in 2013
+  to OpenDev in 2024 and Atlassian in 2025 (Bacchelli and Bird; Turzo and Bosu; Goldman et al.).
 - Dependency updates are worse: in the top packages of four registries only about half of updates were
   code reviewed at all (Imtiaz and Williams, 2022).
 - Teams with high AI adoption merge 98% more pull requests while review time per request rises 91%
@@ -136,6 +137,8 @@ shipped triggers.
 ## References
 
 - Bacchelli and Bird, [Expectations, outcomes, and challenges of modern code review](https://sback.it/publications/icse2013.pdf), ICSE 2013.
+- Turzo and Bosu, [What makes a code review useful to OpenDev developers?](https://arxiv.org/abs/2302.11686), EMSE 2024.
+- Goldman et al., [What types of code review comments do developers most frequently resolve?](https://arxiv.org/abs/2510.05450), Atlassian preprint, 2025.
 - Imtiaz and Williams, [Are your dependencies code reviewed?](https://arxiv.org/abs/2206.09422), 2022.
 - Faros AI, [The AI Productivity Paradox](https://www.faros.ai/blog/ai-software-engineering), 2025.
 - Atlassian, [RovoDev Code Reviewer](https://arxiv.org/html/2601.01129v1), ICSE-SEIP 2026.

@@ -16,7 +16,8 @@ was not. It never approves anything itself. A person decides every merge.
 
 ## Why now
 
-1. **Review is not catching what now comes in.** Only about one review comment in seven is about a defect.
+1. **Review is not catching what now comes in.** Only 5 to 20% of review comments are about defects, and
+   that has not changed in a decade of studies.
    About half of dependency updates in the most popular package registries are never code reviewed.
    Teams using AI heavily merge almost twice as many changes while review time per change nearly doubles.
 2. **The worst attacks are not in the code a reviewer reads.** In 12 of 21 real malicious changes I

@@ -8,7 +8,7 @@ This page gives AI Code Review its numbers. It answers three questions with meas
 
 The short answer has five parts.
 
-1. Human review is mostly not a bug hunt. About one comment in seven is about a defect. Knowledge transfer and code improvement dominate.
+1. Human review is mostly not a bug hunt. Between 5 and 20 percent of review comments are about defects, and that range has held from Microsoft in 2013 to OpenDev in 2024 and Atlassian in 2025. Knowledge transfer and code improvement dominate.
 2. In production at large companies, a well-tuned AI reviewer gets 40 to 74 percent of its comments acted on. Humans sit at 44 to 60 percent on comparable measures.
 3. In open source, untuned AI review actions get 1 to 19 percent of comments acted on. Benchmarks with full PR context put precision at 2 to 17 percent. The gap between these and the industry figures is the most important fact on this page. Tuning, filtering and a noise budget are the product, not an extra.
 4. AI review has measurably made things worse in four ways: slower PRs, slower reviewers, anchored reviewers who miss severe issues, and models that a crafted PR description can talk out of finding a vulnerability.
@@ -24,11 +24,15 @@ How I label sources. **Peer-reviewed** means a refereed venue (ICSE, FSE, TOSEM,
 |---|---|---|---|
 | Defects are a minority of review comments | 78 of 570 comments (14%) were about defects; fourth of nine categories. Code improvements were first at 165 (29%). Of the defect comments, 65 were logic issues and 5 were security (§V.A, Fig. 4) | Peer-reviewed | Bacchelli & Bird, ICSE 2013 |
 | Yet finding defects is the top stated motivation | 383 of 873 programmers (44%) ranked "finding defects" first (§IV) | Peer-reviewed | Bacchelli & Bird, ICSE 2013 |
+| The share has held for a decade | Of 2,500 hand-coded OpenDev Nova comments, 19% fell in the "Functional" group, the most valued by developers; the authors note the ratio matches prior studies (Table 5) | Peer-reviewed (EMSE 2024) | Turzo & Bosu |
+| Lower still in a 2025 industrial sample | 30 of 465 human comments (6.5%) on Atlassian pull requests were about bugs; readability was 214 (46.0%) | Preprint (Atlassian) | Goldman et al., arXiv 2510.05450 |
 | Defect comments are shallow | Authors say defect comments "mostly address micro level and superficial concerns" (§V.A) | Peer-reviewed | Bacchelli & Bird, ICSE 2013 |
 | At Google, education is a primary driver | Interviewees name education, norms, gatekeeping and accident prevention as the themes (§4) | Peer-reviewed | Sadowski et al., ICSE-SEIP 2018 |
 | What expert reviewers prioritise | In 18,000 Meta reviews: correctness and reliability 44.4%, code quality 19.2%, security 19.1%, best practices 7.2%, performance 6.6%, design 3.6% (RQ1) | Preprint (Meta) | Maddila et al., ARCTIC, 2026 |
 
 Bacchelli and Bird found that review is "less about defects than expected" and more about understanding, knowledge transfer and alternatives. Meta's 2026 taxonomy shows that when reviewers do write substantive comments, correctness and security are two thirds of them. Both are true. Most comments are not defects, but the comments people value most are.
+
+A share of comments is not a detection rate. It says what reviewers spend their comments on, not how many defects they miss. Escaped defects are measured separately: Chromium OS review caught 516 security defects and let 239 through (Paul et al., ICSE 2021).
 
 ### Speed, size and effort
 
@@ -97,6 +101,8 @@ Three things hold across every company that published.
 | Real PRs are far harder than synthetic ones | Best model F1 0.847 on injected bugs vs 0.066 on real bug-fix PRs (-92%) | Preprint | Kumar et al., arXiv 2606.15689 |
 | Review quality collapses with diff size | F1 0.657 on diffs under 10 lines vs 0.043 on diffs over 150 lines; near-zero recall on performance bugs | Preprint | Kumar et al., arXiv 2606.15689 |
 | Bigger model is not always better | A smaller model beat a larger one on F1 (0.365 vs 0.343) at 3.2x lower cost per review, reproduced on Martian's benchmark | Preprint | Kumar et al., arXiv 2606.15689 |
+| An AI reviewer aims at defects and often misses | CodeRabbit in open source: 43.3% of its comments were about functional defects, a rising share, and 35.8% of those were rejected as invalid. 36.4% of all its comments were accepted, 56.3% rejected | Preprint | Lin et al., arXiv 2607.03316 |
+| Bug comments are acted on as often as others | Resolution of 4,000 LLM comments at Atlassian: readability 43.3%, bugs 41.9%, maintainability 36.2%, design 28.6%. Resolved means the commented line changed | Preprint (Atlassian) | Goldman et al., arXiv 2510.05450 |
 | LLM security review flags almost everything | Apparent false positive rate on already-fixed code at least 88% for five of six models; 75% of a manual sample were genuine false positives (§III) | Preprint | Alexopoulos et al., arXiv 2603.18740 |
 
 ### Studies where AI review made things worse
@@ -151,6 +157,7 @@ The lesson from benchmarks is about metrics. BLEU against a human comment is wor
 | Rejection overstates agent error | Of rejected agent PRs, 35.7% were clear agent failures, 31.2% workflow constraints, 33.1% no visible rationale. Of merged ones, 15.4% needed reviewer feedback or commits (MSR 2026) | Peer-reviewed (MSR 2026) | Peralta et al., arXiv 2605.22534 |
 | Agent PRs are often not reviewed at all | 58.2% of agent PRs and 75.3% of human PRs had no explicit review; bots reviewed 20.1% of agent PRs vs 10.0% of human PRs | Preprint | Li et al., AIDev |
 | AI-authored PRs carry more review findings | 10.83 issues per PR vs 6.45 for human-only (about 1.7x); logic and correctness 75% more; security up to 2.74x. Authorship was inferred, not verified | Vendor | CodeRabbit, Dec 2025 (470 PRs) |
+| Reviewers of agent PRs comment on correctness most | Of 19,007 inline comments on 3,162 agent-authored PRs (AIDev): functional correctness and feature work 38.5% of comments and 46.5% of PRs; refactoring 14%; documentation 11.4%; security 2.9% | Peer-reviewed (MSR 2026) | Haider & Zimmermann, arXiv 2601.19287 |
 | More PRs, slower review | High-AI-adoption teams merged 98% more PRs; review time rose 91%; PR size rose 154%; bugs per developer rose 9% | Vendor telemetry | Faros AI, Jul 2025 (10,000+ developers) |
 | Intent drift is measurable | Meta scores divergence between a developer's stated intent and an agent's diff; agreement with human annotators QWK 0.907; drift scores reduced misalignment by a further 5.76 points (p=0.026) in rollout | Preprint (Meta) | Maddila et al., ARCTIC |
 
@@ -212,6 +219,9 @@ All fetched 2026-10-14.
 
 **Peer-reviewed**
 - Bacchelli, A. and Bird, C. "Expectations, Outcomes, and Challenges of Modern Code Review." ICSE 2013. https://sback.it/publications/icse2013.pdf.
+- Turzo, A. K. and Bosu, A. "What Makes a Code Review Useful to OpenDev Developers? An Empirical Investigation." EMSE 29(1), 2024. https://arxiv.org/abs/2302.11686.
+- Paul, R. et al. "Why Security Defects Go Unnoticed during Code Reviews? A Case-Control Study of the Chromium OS Project." ICSE 2021. https://arxiv.org/abs/2102.06909.
+- Haider, M. A. and Zimmermann, T. "Understanding Dominant Themes in Reviewing Agentic AI-authored Code." MSR 2026. https://arxiv.org/abs/2601.19287.
 - Sadowski, C. et al. "Modern Code Review: A Case Study at Google." ICSE-SEIP 2018. https://sback.it/publications/icse2018seip.pdf.
 - Sadowski, C. et al. "Tricorder: Building a Program Analysis Ecosystem." ICSE 2015. https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/43322.pdf.
 - Sadowski, C. et al. "Lessons from Building Static Analysis Tools at Google." CACM 61(4), 2018. https://6826.csail.mit.edu/2020/papers/google-analysis-cacm.pdf.
@@ -238,6 +248,7 @@ All fetched 2026-10-14.
 - Li, H. et al. "The Rise of AI Teammates in Software Engineering (SE) 3.0" (AIDev). arXiv 2507.15003. https://arxiv.org/pdf/2507.15003.
 - Nakashima, S. et al. "Why Agentic-PRs Get Rejected: A Comparative Study of Coding Agents." arXiv 2602.04226. https://arxiv.org/pdf/2602.04226.
 - Goldman, S. et al. "What Types of Code Review Comments Do Developers Most Frequently Resolve?" Atlassian, arXiv 2510.05450. https://arxiv.org/pdf/2510.05450.
+- Lin, H. Y. et al. "Is Agentic Code Review Helpful? Mining Developers' Feedback to CodeRabbit Reviews in the Wild." arXiv 2607.03316 v2, 2026-07-24. https://arxiv.org/abs/2607.03316.
 
 **Industry reports**
 - Google Research. "Resolving code review comments with ML." 2023-05-23. https://research.google/blog/resolving-code-review-comments-with-ml/.
