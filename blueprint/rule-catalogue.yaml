@@ -1,0 +1,238 @@
+# The fixed rule catalogue. Every finding names one of these ids as its SARIF ruleId.
+# The model may choose among the model.* rules; it may never invent an id (decision D5), because
+# forges deduplicate by ruleId and GitHub requires it to be stable across analyses.
+#
+# Fields:
+#   class     one of the ten finding classes in the blueprint
+#   stage     2 = deterministic gate (findings stand, the model cannot clear them); 3 = model
+#   blocking  the default for holding a merge (D13). Only stage 2 rules may default to true.
+#             A team may raise a model rule to blocking once its category meets its noise budget.
+#   tool      what produces the finding in the example; "reviewer" means this project's own code
+#   cwe       where one applies
+#   jobs      reference jobs (threats research, candidate jobs) the rule is expected to catch
+#
+# Ids are stable. A retired rule keeps its id with retired: true.
+
+version: 0.1
+
+rules:
+  # --- Stage 2: deterministic gate -------------------------------------------------------------
+  gate.unicode.bidi-control:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: find-unicode-control
+    cwe: CWE-451
+    summary: Unterminated or reordering bidirectional control character in source (Trojan Source)
+    jobs: [9]
+  gate.unicode.invisible:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: reviewer   # byte-range scan: variation selectors, tag characters U+E0000-E007F, zero-width
+    cwe: CWE-451
+    summary: Invisible characters outside string literals, or in quantity inside them
+    jobs: [9]
+  gate.secrets.detected:
+    class: security
+    stage: 2
+    blocking: true
+    tool: gitleaks
+    cwe: CWE-798
+    summary: Credential or key material added by the change
+  gate.licence.changed:
+    class: licence
+    stage: 2
+    blocking: false
+    tool: ScanCode
+    summary: Licence of a file or package changed, or a new licence entered the tree
+  gate.sast.finding:
+    class: security
+    stage: 2
+    blocking: false
+    tool: bandit, gosec, Opengrep, ruff, eslint-plugin-security
+    summary: A static analysis finding on a changed line; the tool's own rule and CWE travel with it
+  gate.install-script.added:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: reviewer
+    cwe: CWE-506
+    summary: A new install-time script (npm preinstall or postinstall, setup.py code, build hooks)
+    jobs: [2]
+  gate.dependency.unused:
+    class: suspicious
+    stage: 2
+    blocking: true
+    tool: reviewer
+    summary: A dependency added to the manifest that no code imports
+    jobs: [2]
+  gate.dependency.nonexistent:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: registry metadata
+    summary: A dependency name the registry does not have
+    jobs: [13]
+  gate.dependency.new-package:
+    class: suspicious
+    stage: 2
+    blocking: false
+    tool: registry metadata
+    summary: A dependency first published within the team's window, 30 days by default
+    jobs: [13]
+  gate.dependency.known-malicious:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: OSV-Scanner (OpenSSF Malicious Packages), GuardDog
+    cwe: CWE-506
+    summary: A package or version listed as malicious, or matching a known malicious pattern
+  gate.provenance.lost:
+    class: provenance
+    stage: 2
+    blocking: true
+    tool: Sigstore clients
+    summary: A signature or attestation the previous version had and this one lacks
+    jobs: [2]
+  gate.provenance.tag-moved:
+    class: provenance
+    stage: 2
+    blocking: true
+    tool: reviewer
+    summary: A tag or action reference now points at a different commit than when first seen, or at one not on the default branch
+    jobs: [5, 6]
+  gate.artifact.unexplained-difference:
+    class: provenance
+    stage: 2
+    blocking: true
+    tool: reviewer, diffoscope
+    cwe: CWE-506
+    summary: A difference between the installed artifact and the source at its tag that regenerated build output does not explain
+    jobs: [1, 3, 6]
+  gate.artifact.unused-binary:
+    class: suspicious
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: A new binary file that no test, build step or code references
+    jobs: [1]
+  gate.artifact.decode-and-execute:
+    class: malicious
+    stage: 2
+    blocking: true
+    tool: GuardDog, malcontent
+    cwe: CWE-506
+    summary: Data decoded or decrypted at runtime and then executed
+    jobs: [4]
+  gate.capability.added:
+    class: suspicious
+    stage: 2
+    blocking: false
+    tool: malcontent, Capslock
+    summary: The new version gains a capability the old one lacked (network, process execution, file system outside its own)
+  gate.ci.mutable-reference:
+    class: security
+    stage: 2
+    blocking: false
+    tool: zizmor
+    cwe: CWE-829
+    summary: A workflow uses an action or image by tag or branch instead of a full digest
+    jobs: [5]
+  gate.ci.untrusted-to-agent:
+    class: security
+    stage: 2
+    blocking: true
+    tool: zizmor, reviewer
+    cwe: CWE-77
+    summary: A workflow passes outside text to an agent that has tools or secrets, or shares a cache with a release job
+    jobs: [11]
+  gate.instructions.changed:
+    class: suspicious
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: A change to a file an AI agent reads as instructions (AGENTS.md, rules files, prompt files); routed to its owner
+    jobs: [10]
+  gate.tests.weakened:
+    class: unproven
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: The change deletes an assertion, adds a skip marker, or relaxes a CI threshold
+    jobs: [12]
+  gate.generated.does-not-regenerate:
+    class: provenance
+    stage: 2
+    blocking: true
+    tool: reviewer
+    summary: Generated code that does not regenerate to the same bytes from its declared generator and inputs
+  gate.vendored.residue:
+    class: scope
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: Vendored code differs from the upstream it names; the residue is reviewed as a first-party change
+  gate.vex.stale:
+    class: unproven
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: The change reaches code an existing not_affected statement places outside the execute path
+  gate.size.over-limit:
+    class: scope
+    stage: 2
+    blocking: false
+    tool: reviewer
+    summary: The diff exceeds the team's size limit (400 changed lines by default); covered parts are listed and a split is asked for
+
+  # --- Stage 3: quarantined review (model) -----------------------------------------------------
+  model.intent.undescribed:
+    class: intent-drift
+    stage: 3
+    blocking: false
+    summary: The diff does something the description, issue and commit messages do not mention
+  model.intent.unfulfilled:
+    class: intent-drift
+    stage: 3
+    blocking: false
+    summary: The description claims something the diff does not do
+  model.defect.logic:
+    class: defect
+    stage: 3
+    blocking: false
+    summary: A logic, boundary or error-handling defect introduced by the change
+    jobs: [7]
+  model.security.weakness:
+    class: security
+    stage: 3
+    blocking: false
+    summary: A security weakness introduced by the change; the CWE is required
+    jobs: [7, 14]
+  model.security.removed-check:
+    class: security
+    stage: 3
+    blocking: false
+    summary: A validation, authorization or expiry check removed or bypassed
+  model.convention.departure:
+    class: convention
+    stage: 3
+    blocking: false
+    summary: A departure from the repository's own stated conventions, quoting the convention
+  model.unproven.untested-path:
+    class: unproven
+    stage: 3
+    blocking: false
+    summary: Changed behaviour that no test in the harness evidence reaches
+  model.suspicious.pass-disagreement:
+    class: suspicious
+    stage: 3
+    blocking: false
+    summary: The full and the blind pass reached different verdicts on the same region; both are shown
+    jobs: [8]
+  model.suspicious.injection:
+    class: suspicious
+    stage: 3
+    blocking: false
+    summary: Text in the change addresses the reviewer or asks it to act (approve, print, ignore)
+    jobs: [8]

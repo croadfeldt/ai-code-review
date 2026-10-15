@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/croadfeldt/ai-code-review/blob/main/blueprint/finding.schema.json",
+  "title": "AI Code Review finding",
+  "description": "One finding, as the reviewer keeps it internally and as stage 3 must return it. Every field maps to SARIF 2.1.0; the mapping is given in each description. A finding that does not validate is dropped and counted, never shown (decision D5).",
+  "type": "object",
+  "required": ["rule_id", "class", "stage", "location", "evidence", "message", "kind", "level"],
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "description": "An id from rule-catalogue.yaml. SARIF result.ruleId. The model may not invent one.",
+      "type": "string",
+      "pattern": "^(gate|model)\\.[a-z0-9-]+\\.[a-z0-9-]+$"
+    },
+    "class": {
+      "description": "SARIF result.properties.class.",
+      "enum": ["intent-drift", "defect", "security", "malicious", "suspicious", "provenance", "licence", "convention", "unproven", "scope"]
+    },
+    "stage": {
+      "description": "2 for the deterministic gate, 3 for the quarantined review. SARIF run.tool.driver: the gate's tools and the reviewer's model are separate runs in one log.",
+      "enum": [2, 3]
+    },
+    "cwe": {
+      "description": "SARIF result.taxa, referencing the CWE taxonomy. Required for model.security.* rules.",
+      "type": "string",
+      "pattern": "^CWE-[0-9]+$"
+    },
+    "location": {
+      "description": "SARIF result.locations[0].physicalLocation. The file and lines must exist at the head commit (goal G2).",
+      "type": "object",
+      "required": ["path", "start_line"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "description": "Repository-relative, or artifact-relative with the artifact named in 'artifact'." },
+        "start_line": { "type": "integer", "minimum": 1 },
+        "end_line": { "type": "integer", "minimum": 1 },
+        "artifact": { "type": "string", "description": "For ingestion findings: the package URL (purl) of the artifact the path is inside." }
+      }
+    },
+    "evidence": {
+      "description": "What the finding rests on. At least one item. SARIF result.properties.evidence, and result.codeFlows where a path is shown.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kind", "ref"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["tool-output", "quoted-span", "harness-result", "artifact-diff", "registry-metadata", "provenance", "vex-statement"] },
+          "ref": { "type": "string", "description": "A path in the run's records, or a URL, that a reader can open." },
+          "quote": { "type": "string", "description": "For quoted-span: the exact text at the location, checked by grounding." },
+          "tool": { "type": "string", "description": "Name and version of the tool, for tool-output." }
+        }
+      }
+    },
+    "message": {
+      "description": "SARIF result.message.text. Plain, one or two sentences, no links to outside hosts (they are stripped before posting).",
+      "type": "string",
+      "maxLength": 600
+    },
+    "kind": {
+      "description": "SARIF result.kind. 'review' for a model finding no tool or test corroborates; 'fail' for a gate finding or a corroborated one.",
+      "enum": ["fail", "review"]
+    },
+    "level": {
+      "description": "SARIF result.level.",
+      "enum": ["error", "warning", "note"]
+    },
+    "blocking": {
+      "description": "Whether the team's policy holds the merge on this finding. Set by triage from the catalogue and the team's settings, never by the model.",
+      "type": "boolean"
+    },
+    "confidence": {
+      "description": "Set by triage from the evidence (tool, corroboration, both passes agreeing), not from the model's self-report. SARIF result.rank, scaled 0 to 100.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "passes": {
+      "description": "For stage 3: which passes produced it. A finding from one pass only, on a region the other judged differently, raises model.suspicious.pass-disagreement.",
+      "type": "array",
+      "items": { "enum": ["full", "blind"] },
+      "uniqueItems": true
+    },
+    "fingerprint": {
+      "description": "SARIF result.fingerprints['ai-code-review/v1'] and partialFingerprints.primaryLocationLineHash. Computed from rule id, normalized code and enclosing symbol, not the line number. Set by triage.",
+      "type": "string"
+    },
+    "baseline_state": {
+      "description": "SARIF result.baselineState against the base commit's run. Only 'new' is posted as a comment.",
+      "enum": ["new", "unchanged", "updated", "absent"]
+    },
+    "test_request": {
+      "description": "For a claim only a test can settle: the request sent to the harness. The finding stays class 'unproven' until it answers.",
+      "type": "object",
+      "required": ["behaviour"],
+      "additionalProperties": false,
+      "properties": {
+        "behaviour": { "type": "string" },
+        "symbol": { "type": "string" }
+      }
+    },
+    "suppression": {
+      "description": "SARIF result.suppressions[0]: a dismissal by a person, with the reason. Recorded, read by the gate, counted as answered by feedback.",
+      "type": "object",
+      "required": ["status", "justification", "by"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["accepted", "underReview", "rejected"] },
+        "justification": { "type": "string", "minLength": 1 },
+        "by": { "type": "string", "description": "The forge identity of the person who dismissed it." }
+      }
+    }
+  }
+}

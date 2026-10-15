@@ -1,0 +1,69 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "https://github.com/example/service",
+      "digest": { "gitCommit": "<40-hex head commit>" }
+    }
+  ],
+  "predicateType": "https://croadfeldt.github.io/ai-code-review/attestation/ai-code-review/v0.1",
+  "predicate": {
+    "review_kind": "automated-analysis",
+    "reviewer": {
+      "id": "https://github.com/croadfeldt/ai-code-review",
+      "version": "0.1.0",
+      "image_digest": "sha256:<digest>"
+    },
+    "model": {
+      "id": "<model id>",
+      "endpoint": "<endpoint label>",
+      "prompt_set": "review-v1",
+      "prompt_set_digest": "sha256:<digest>"
+    },
+    "change": {
+      "source": "agent",
+      "base": "<40-hex base commit>",
+      "head": "<40-hex head commit>",
+      "forge_ref": "https://github.com/example/service/pull/123"
+    },
+    "selfcheck": { "passed": true, "register": [] },
+    "checked": [
+      { "check": "gate.unicode", "tool": "find-unicode-control", "version": "<version>", "status": "ran" },
+      { "check": "gate.secrets", "tool": "gitleaks", "version": "<version>", "status": "ran" },
+      { "check": "gate.sast", "tool": "bandit", "version": "<version>", "status": "ran" },
+      { "check": "gate.dependency", "tool": "reviewer", "version": "0.1.0", "status": "ran" },
+      { "check": "gate.ci", "tool": "zizmor", "version": "<version>", "status": "ran" },
+      { "check": "model.intent", "tool": "reviewer", "version": "0.1.0", "status": "ran" },
+      { "check": "model.defect", "tool": "reviewer", "version": "0.1.0", "status": "ran" }
+    ],
+    "not_checked": [
+      { "what": "performance", "reason": "out of scope" },
+      { "what": "src/generated/client.py", "reason": "regenerated from its declared inputs with no residue" }
+    ],
+    "findings": [
+      {
+        "rule_id": "model.intent.undescribed",
+        "class": "intent-drift",
+        "level": "warning",
+        "kind": "review",
+        "blocking": false,
+        "fingerprint": "<fingerprint>",
+        "location": { "path": "src/auth.py", "start_line": 88, "end_line": 97 }
+      }
+    ],
+    "findings_log": { "uri": "report/findings.sarif", "digest": { "sha256": "<digest>" } },
+    "counts": { "findings": 1, "blocking": 0, "suspicious": 0, "candidates": 4, "dropped": 3 },
+    "passes": { "full": 1, "blind": 1, "disagreements": 0 },
+    "harness_evidence": [
+      { "type": "test-result", "digest": { "sha256": "<digest>" }, "status": "read" },
+      { "type": "openvex", "digest": { "sha256": "<digest>" }, "status": "read" }
+    ],
+    "run": {
+      "run_id": "<id>",
+      "started_on": "2026-10-15T14:02:11Z",
+      "finished_on": "2026-10-15T14:05:40Z",
+      "tokens": { "prompt": 0, "completion": 0 },
+      "cpu_minutes": 0
+    }
+  }
+}
