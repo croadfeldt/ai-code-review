@@ -29,7 +29,9 @@ statements, UDLM records) as an input.
 |---|---|
 | An executive, or anyone who wants the point in five minutes | [Executive summary](docs/00-executive-summary.md) |
 | Deciding whether to fund it | [Executive summary](docs/00-executive-summary.md), then [The case](docs/01-the-case.md) |
-| An engineer or architect who will build or run it | [Blueprint](docs/03-blueprint.md), then [Decision record](docs/21-decision-record.md) and [Target goals](docs/target-goals.md) |
+| An engineer or architect who will build or run it | [How it works](docs/02-how-it-works.md), the [Blueprint](docs/03-blueprint.md), then the [Specification](docs/14-specification.md) and [Decision record](docs/21-decision-record.md) |
+| Choosing components | [Capability map](docs/05-capability-map.md) |
+| Writing a gate policy or a tool that reads the reviewer's output | [`blueprint/`](blueprint/): the predicate, the finding schema, the reference gate policy |
 | Judging whether it would work | [Target goals](docs/target-goals.md) |
 | Looking for what already exists | [Landscape](docs/04-landscape.md) |
 | Checking a claim | The four research notes under [docs/research/](docs/research/), each with its sources |
@@ -41,8 +43,10 @@ AGENTS.md                         For an AI assistant or coding agent pointed at
 docs/
   00-executive-summary.md         The point, in one page
   01-the-case.md                  The business case
+  02-how-it-works.md              The mechanism, with diagrams
   03-blueprint.md                 The blueprint in three pages
   04-landscape.md                 Existing work: reuse, learn from, benchmark against, avoid
+  05-capability-map.md            One primary and one fallback per capability
   research/
     README.md                     What the research settled, and what it changes in the plan
     efficacy.md                   Measured evidence on human review and AI review
@@ -51,7 +55,16 @@ docs/
   target-goals.md                 The goals a run and a pilot are judged against
   open-questions.md               What was open before the blueprint, and where each ruling went
   08-glossary.md                  Plain-language definitions
+  14-specification.md             What an implementation must do, each line with its proof
+  15-failure-register.md          The rule for turning every observed failure into a self-check
   21-decision-record.md           The positions settled, each with its reason and what it rules out
+blueprint/
+  finding.schema.json             One finding, mapped field by field to SARIF 2.1.0
+  rule-catalogue.yaml             The fixed rule ids; which are deterministic and which hold a merge by default
+  predicate.md                    The ai-code-review in-toto predicate, with example-statement.json
+  evidence-input.md               What the reviewer reads from the test harness, and how it is bound to a commit
+  gate-policy.rego                Reference gate policy (Conforma or OPA), with gate-policy_test.rego
+  pipeline-skeleton.yaml          The stages as pipeline tasks
 ```
 
 Document numbers follow the harness wherever a document has a counterpart there, so a reader of one can
@@ -59,11 +72,9 @@ find their way in the other.
 
 ## What comes next
 
-1. The rest of the blueprint: how it works, the capability map, the specification, the failure register
-   and the contracts (finding schema, the `ai-code-review` predicate, the evidence input contract).
-2. The two-sided reference corpus and a measured baseline (decisions D19 and D21).
-3. An opinionated implementation, then examples that are all tool output, on the same target repositories
-   the harness uses, plus a two-sided reference corpus of defanged historical malicious changes.
+1. The two-sided reference corpus and a measured baseline (decisions D19 and D21).
+2. An opinionated implementation, then examples that are all tool output, on the same target repositories
+   the harness uses.
 
 ## How this is written
 

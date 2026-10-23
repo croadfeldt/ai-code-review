@@ -1,0 +1,46 @@
+# Tekton Pipeline outline for an AI Code Review run, beside the AI Test Harness.
+# Not runnable as-is: task refs, params and workspaces are placeholders. Tekton is the example;
+# any engine that runs a container step fits the same way.
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: ai-code-review
+spec:
+  params:
+    - name: REPO_URL
+    - name: BASE_SHA
+    - name: HEAD_SHA
+    - name: FORGE_REF             # the pull request or merge request; empty for a push
+    - name: SOURCE                # first-party | agent | dependency | vendored | generated
+  workspaces:
+    - name: source                # read-only checkout at HEAD_SHA
+    - name: artifacts             # installed artifacts at both versions, for a bump
+    - name: results
+  tasks:
+    - name: selfcheck
+      taskRef: { name: review-selfcheck }      # stage 0: register self-checks; probes prove the model step has no tools, network or secrets; fails closed
+    - name: intake
+      runAfter: [selfcheck]
+      taskRef: { name: review-intake }         # stage 1: diff and context; for a bump, artifacts old and new, source at tag, provenance; harness evidence by head commit
+    - name: gate
+      runAfter: [intake]
+      taskRef: { name: review-gate }           # stage 2: deterministic checks; no model; findings stand
+    - name: review
+      runAfter: [gate]
+      taskRef: { name: review-quarantined }    # stage 3: two passes, one blind
+      # runtimeClassName: kata; egress only to the model endpoint; no forge token; no signing key
+    - name: ground
+      runAfter: [review]
+      taskRef: { name: review-ground }         # stage 4: candidates checked against the tree and the tools; test requests to the harness
+    - name: triage
+      runAfter: [ground]
+      taskRef: { name: review-triage }         # stage 5: class, confidence, noise budget, size scoping; gate findings joined unchanged
+    - name: attest
+      runAfter: [triage]
+      taskRef: { name: review-attest }         # signs the ai-code-review statement; the only task that holds a signing identity
+    - name: report
+      runAfter: [attest]
+      taskRef: { name: review-report }         # stage 6: SARIF, comments (COMMENT only), check run (neutral or failure), outside links stripped
+  finally:
+    - name: record
+      taskRef: { name: review-record }         # run index, story, tokens and CPU-minutes; feedback (stage 7) runs on merge, in its own pipeline
